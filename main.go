@@ -13,6 +13,11 @@ type cliCommand struct {
 	callback    func() error
 }
 
+type config struct {
+	next string
+	previous string
+}
+
 func GetHelp()map[string]cliCommand{
 return map[string]cliCommand{
     "help": {
@@ -31,7 +36,7 @@ return map[string]cliCommand{
 var cliName string = "Pokedex >"
 
 func printPrompt(){
-	fmt.Println(cliName)
+	fmt.Print(cliName)
 }
 
 
@@ -44,13 +49,12 @@ func cleanInput(text string) string {
 func commandHelp() error {
     // Implement the logic to display the help message here
     for cmd, desc := range GetHelp() {
-        fmt.Println(cmd, "-", desc.description)
+        fmt.Println(cmd, ": ", desc.description)
     }
     return nil // Returning nil indicates no error
 }
 
 func commandExit() error {
-    fmt.Println("Exiting Pokedex...")
     os.Exit(0)
     return nil 
 }
