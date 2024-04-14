@@ -1,8 +1,8 @@
 package main
 
 import (
-	"fmt"
 	"bufio"
+	"fmt"
 	"os"
 	"strings"
 )
@@ -23,7 +23,7 @@ return map[string]cliCommand{
     "exit": {
         name:        "exit",
         description: "Exit the Pokedex",
-        callback:    os.Exit(0),
+        callback:    commandExit,
     },
 }
 }
@@ -41,6 +41,20 @@ func cleanInput(text string) string {
     return output
 }
 
+func commandHelp() error {
+    // Implement the logic to display the help message here
+    for cmd, desc := range GetHelp() {
+        fmt.Println(cmd, "-", desc.description)
+    }
+    return nil // Returning nil indicates no error
+}
+
+func commandExit() error {
+    fmt.Println("Exiting Pokedex...")
+    os.Exit(0)
+    return nil 
+}
+
 
 
 func main() {
@@ -49,12 +63,15 @@ func main() {
 				printPrompt()
 				for reader.Scan(){
 						text := cleanInput(reader.Text())
-						if text == "help"{
-							for cmd, desc := range helpMenu {
-								fmt.Println(cmd, desc)
-							}
-						}else if text == "exit" {
-							 helpMenu["exit"]
-						}
-				}			printPrompt()
+			        if command, exists := helpMenu[text]; exists {
+            err := command.callback()
+            if err != nil {
+                fmt.Println("Error executing command:", err)
+            }
+        } else {
+            fmt.Println("Unknown command")
+        }
+
+        printPrompt() 
+				}		
 }
