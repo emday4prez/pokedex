@@ -77,14 +77,33 @@ func commandExit() error {
     return nil 
 }
 
+var location config
+
 // MAP
 // The map command displays the names of 20 location areas in the Pokemon world. Each subsequent call to map should display the next 20 locations, and so on. The idea is that the map command will let us explore the world of Pokemon.
 
-func commandMapb() error {
-    // Implement the logic to display the locations here
-    for cmd, desc := range GetHelp() {
-        fmt.Println(cmd, ": ", desc.description)
+func commandMap() error {
+    // Implement the logic to display the previous locations here
+ resp, err := http.Get("https://pokeapi.co/api/v2/location-area?offset=20&limit=20")
+	if err != nil {
+	// handle error
+	fmt.Println("...there was an error")
+}
+defer resp.Body.Close()
+body, err := io.ReadAll(resp.Body)
+fmt.Print(string(body))
+
+    var result LocationGroupResponse
+    if err := json.Unmarshal(body, &result); err != nil {  // Parse []byte to the go struct pointer
+        fmt.Println("Can not unmarshal JSON")
     }
+				
+				location.next = result.Next
+				location.previous = result.Previous.(string)
+
+				for _, loc := range result.Results{
+					fmt.Println(loc.Name)
+				}
     return nil // Returning nil indicates no error
 }
 
@@ -93,12 +112,11 @@ func commandMapb() error {
 
 // If you're on the first "page" of results, this command should just print an error message.
 
-
-func commandMap() error {
-    // Implement the logic to display the previous locations here
+func commandMapb() error {
  resp, err := http.Get("https://pokeapi.co/api/v2/location-area")
 	if err != nil {
 	// handle error
+	fmt.Println("...there was an error")
 }
 defer resp.Body.Close()
 body, err := io.ReadAll(resp.Body)
@@ -107,19 +125,19 @@ body, err := io.ReadAll(resp.Body)
     if err := json.Unmarshal(body, &result); err != nil {  // Parse []byte to the go struct pointer
         fmt.Println("Can not unmarshal JSON")
     }
+				
 				for _, loc := range result.Results{
 					fmt.Println(loc.Name)
 				}
     return nil // Returning nil indicates no error
 }
 
-
-
 func main() {
 				
     reader := bufio.NewScanner(os.Stdin)
 				helpMenu := GetHelp()
 				printPrompt()
+			
 				for reader.Scan(){
 						text := cleanInput(reader.Text())
 			       if command, exists := helpMenu[text]; exists {
