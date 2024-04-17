@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -99,7 +100,6 @@ func commandMap() error {
 }
 defer resp.Body.Close()
 body, err := io.ReadAll(resp.Body)
-fmt.Print(string(body))
 
     var result LocationGroupResponse
     if err := json.Unmarshal(body, &result); err != nil {  // Parse []byte to the go struct pointer
@@ -127,10 +127,14 @@ fmt.Print(string(body))
 // If you're on the first "page" of results, this command should just print an error message.
 
 func commandMapb() error {
- resp, err := http.Get("https://pokeapi.co/api/v2/location-area")
+	if !started || location.previous ==  "" {
+		return errors.New("nowhere to go")
+	}
+
+ resp, err := http.Get(location.previous)
 	if err != nil {
 	// handle error
-	fmt.Println("...there was an error")
+	fmt.Sprintln("...there was an error :::: \n", err)
 }
 defer resp.Body.Close()
 body, err := io.ReadAll(resp.Body)
