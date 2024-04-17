@@ -82,9 +82,17 @@ var location config
 // MAP
 // The map command displays the names of 20 location areas in the Pokemon world. Each subsequent call to map should display the next 20 locations, and so on. The idea is that the map command will let us explore the world of Pokemon.
 
+var started bool = false
 func commandMap() error {
-    // Implement the logic to display the previous locations here
- resp, err := http.Get("https://pokeapi.co/api/v2/location-area?offset=20&limit=20")
+    // Implement the logic to display the next locations here
+			var URL string 
+				if started {
+					 URL = location.next
+				}else{
+					URL = "https://pokeapi.co/api/v2/location-area"
+				}	
+ started = true
+	resp, err := http.Get(URL)
 	if err != nil {
 	// handle error
 	fmt.Println("...there was an error")
@@ -97,9 +105,15 @@ fmt.Print(string(body))
     if err := json.Unmarshal(body, &result); err != nil {  // Parse []byte to the go struct pointer
         fmt.Println("Can not unmarshal JSON")
     }
-				
+
 				location.next = result.Next
-				location.previous = result.Previous.(string)
+
+				if(result.Previous != nil){
+					location.previous = result.Previous.(string)
+				}else{
+					location.previous = ""
+				}
+				
 
 				for _, loc := range result.Results{
 					fmt.Println(loc.Name)
