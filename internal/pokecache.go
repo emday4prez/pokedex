@@ -42,19 +42,17 @@ func (c *Cache) reapLoop(interval time.Duration) {
 		ticker := time.NewTicker(interval)
 		defer ticker.Stop()
 
-		for{
-			select{
-			case <-ticker.C:
-				c.mu.Lock()
-				for key, entry := range c.cacheMap{
-					if time.Since(entry.createdAt) > interval {
-						delete(c.cacheMap, key)
-					}
-				}
+for range ticker.C {
+	c.mu.Lock()
+	for key, entry := range c.cacheMap {
+		if time.Since(entry.createdAt) > interval {
+			delete(c.cacheMap, key)
+		}
+	}
 				c.mu.Unlock()
 			}
 		}
-}
+
 
 func NewCache(interval time.Duration)*Cache {
 	

@@ -8,7 +8,9 @@ import (
 	"io"
 	"net/http"
 	"os"
+	pokecache "pokedex/internal"
 	"strings"
+	"time"
 )
 	
 type cliCommand struct {
@@ -23,7 +25,8 @@ type config struct {
 }
 
 
-
+var started bool = false
+var myCache *pokecache.Cache 
 
 
 func GetHelp()map[string]cliCommand{
@@ -83,29 +86,35 @@ var location config
 // MAP
 // The map command displays the names of 20 location areas in the Pokemon world. Each subsequent call to map should display the next 20 locations, and so on. The idea is that the map command will let us explore the world of Pokemon.
 
-var started bool = false
+
+
 func commandMap() error {
     // Implement the logic to display the next locations here
 			var URL string 
-				if started {
+
+			if cachedData, ok := myCache.Get(URL); ok{
+					var result LocationGroupResponse
+					if err := json.Unmarshal(cachedData, &result); err != nil{
+						return fmt.Errorf("error unmarshalling cached data: %v", err)
+					}
+			}else{
+								if started {
 					 URL = location.next
 				}else{
 					URL = "https://pokeapi.co/api/v2/location-area"
 				}	
- started = true
+ started = true	
 	resp, err := http.Get(URL)
 	if err != nil {
 	// handle error
 	fmt.Println("...there was an error")
-}
+			}
 defer resp.Body.Close()
 body, err := io.ReadAll(resp.Body)
-
     var result LocationGroupResponse
     if err := json.Unmarshal(body, &result); err != nil {  // Parse []byte to the go struct pointer
         fmt.Println("Can not unmarshal JSON")
     }
-
 				location.next = result.Next
 
 				if(result.Previous != nil){
@@ -113,12 +122,13 @@ body, err := io.ReadAll(resp.Body)
 				}else{
 					location.previous = ""
 				}
-				
-
 				for _, loc := range result.Results{
 					fmt.Println(loc.Name)
 				}
-    return nil // Returning nil indicates no error
+				myCache.Add(URL, body)
+}
+// Returning nil indicates no error
+ return nil
 }
 
 // MAPB (MAP BACK)
@@ -159,6 +169,7 @@ body, err := io.ReadAll(resp.Body)
 func main() {
 				
     reader := bufio.NewScanner(os.Stdin)
+				myCache = pokecache.NewCache(5 * time.Second) 
 				helpMenu := GetHelp()
 				printPrompt()
 			
