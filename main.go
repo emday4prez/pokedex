@@ -51,6 +51,11 @@ return map[string]cliCommand{
 						description: "Displays the previous 20 location areas",
 						callback: commandMapb,
 				},
+												"explore": {
+						name: "explore",
+						description: "Provide a location-area and get a list of pokemon in that area",
+						callback: commandExplore,
+				},
 }
 }
 
@@ -160,7 +165,11 @@ body, err := io.ReadAll(resp.Body)
     return nil // Returning nil indicates no error
 }
 
+func commandExplore(loc string) error{
 
+
+	return nil
+}
 
 
 
