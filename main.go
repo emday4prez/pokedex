@@ -24,10 +24,9 @@ type config struct {
 	previous string
 }
 
-
 var started bool = false
 var myCache *pokecache.Cache 
-
+var location config
 
 func GetHelp()map[string]cliCommand{
 return map[string]cliCommand{
@@ -86,7 +85,7 @@ func commandExit() error {
     return nil 
 }
 
-var location config
+
 
 // MAP
 // The map command displays the names of 20 location areas in the Pokemon world. Each subsequent call to map should display the next 20 locations, and so on. The idea is that the map command will let us explore the world of Pokemon.
@@ -94,7 +93,7 @@ var location config
 
 
 func commandMap() error {
-    // Implement the logic to display the next locations here
+
 			var URL string 
 
 			if cachedData, ok := myCache.Get(URL); ok{
@@ -166,8 +165,29 @@ body, err := io.ReadAll(resp.Body)
 }
 
 func commandExplore(loc string) error{
-
-
+		URL := fmt.Sprintf("%s%s","https://pokeapi.co/api/v2/location-area/", loc)
+			if cachedData, ok := myCache.Get(URL); ok{
+					var result LocationGroup
+					if err := json.Unmarshal(cachedData, &result); err != nil{
+						return fmt.Errorf("error unmarshalling cached data: %v", err)
+					}
+			}else{
+						resp, err := http.Get(URL)
+						if err != nil {
+						// handle error
+						fmt.Println("...there was an error")
+								}
+						defer resp.Body.Close()
+						body, err := io.ReadAll(resp.Body)
+						var result LocationGroup
+						if err := json.Unmarshal(body, &result); err != nil {  // Parse []byte to the go struct pointer
+													fmt.Println("Can not unmarshal JSON")
+									}
+									for _, item := range result.PokemonEncounters{
+										fmt.Println(item.Pokemon.Name)
+									}
+									myCache.Add(URL, body)
+}
 	return nil
 }
 
