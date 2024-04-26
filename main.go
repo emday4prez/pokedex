@@ -16,7 +16,7 @@ import (
 type cliCommand struct {
 	name        string
 	description string
-	callback    func() error
+	callback    func(string) error
 }
 
 type config struct {
@@ -42,7 +42,7 @@ return map[string]cliCommand{
     },
 				"map": {
 						name: "map",
-						description: " Displays the names of 20 location areas",
+						description: "Displays the names of 20 location areas",
 						callback: commandMap,
 				},
 								"mapb": {
@@ -72,7 +72,7 @@ func cleanInput(text string) string {
     return output
 }
 
-func commandHelp() error {
+func commandHelp(text string) error {
     // Implement the logic to display the help message here
     for cmd, desc := range GetHelp() {
         fmt.Println(cmd, ": ", desc.description)
@@ -80,7 +80,10 @@ func commandHelp() error {
     return nil // Returning nil indicates no error
 }
 
-func commandExit() error {
+func commandExit(text string) error {
+		if text != "" {
+		return errors.New("No args allowed")
+	}
     os.Exit(0)
     return nil 
 }
@@ -92,8 +95,10 @@ func commandExit() error {
 
 
 
-func commandMap() error {
-
+func commandMap(text string) error {
+	if text != "" {
+		return errors.New("No args allowed")
+	}
 			var URL string 
 
 			if cachedData, ok := myCache.Get(URL); ok{
@@ -140,7 +145,10 @@ body, err := io.ReadAll(resp.Body)
 
 // If you're on the first "page" of results, this command should just print an error message.
 
-func commandMapb() error {
+func commandMapb(text string) error {
+	if text != "" {
+		return errors.New("No args allowed")
+	}
 	if !started || location.previous ==  "" {
 		return errors.New("nowhere to go")
 	}
@@ -204,8 +212,14 @@ func main() {
 			
 				for reader.Scan(){
 						text := cleanInput(reader.Text())
-			       if command, exists := helpMenu[text]; exists {
-            err := command.callback()
+						input := strings.Split(text, " ")
+						cmd := input[0]
+						var arg string
+						if len(input) > 1{
+							arg = input[1]
+						}
+			       if command, exists := helpMenu[cmd]; exists {
+            err := command.callback(arg)
             if err != nil {
                 fmt.Println("Error executing command:", err)
             }
