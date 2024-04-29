@@ -63,6 +63,11 @@ return map[string]cliCommand{
 						description: "Provide a pokemon name and try to catch it!",
 						callback: commandCatch,
 				},
+															"inspect": {
+						name: "inspect",
+						description: "take a closer look at pokemon you have caught",
+						callback: commandInspect,
+				},
 }
 }
 
@@ -234,13 +239,21 @@ func commandCatch(name string) error {
 							}else{
 											fmt.Printf("%s escaped!\n", name)
 							}
-						
+									caughtPokemon[name] = result 
 									myCache.Add(url, body)
 }
 	return nil
 }
-
-
+func commandInspect(name string) error {
+    if p, ok := caughtPokemon[name]; ok {
+         fmt.Printf("Name: %v\n", p.Name)
+         fmt.Printf("Height: %v\n", p.Height)
+         fmt.Printf("Weight: %v\n", p.Weight)
+    } else { 
+        fmt.Println("you have not caught that pokemon")
+    } 
+    return nil
+}
 
 func main() {
 				
