@@ -249,6 +249,14 @@ func commandInspect(name string) error {
          fmt.Printf("Name: %v\n", p.Name)
          fmt.Printf("Height: %v\n", p.Height)
          fmt.Printf("Weight: %v\n", p.Weight)
+									fmt.Println("Stats: ")
+									for _, stat := range p.Stats {
+										fmt.Printf("  -%s: %d\n", stat.Stat.Name, stat.BaseStat)
+									}
+												fmt.Println("Types: ")
+									for _, t := range p.Types {
+											fmt.Printf("  -%s\n", t.Type.Name)
+									}
     } else { 
         fmt.Println("you have not caught that pokemon")
     } 
