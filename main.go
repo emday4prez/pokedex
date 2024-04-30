@@ -68,6 +68,11 @@ return map[string]cliCommand{
 						description: "take a closer look at pokemon you have caught",
 						callback: commandInspect,
 				},
+																			"pokedex": {
+						name: "pokedex",
+						description: "view your pokemon",
+						callback: commandPokedex,
+				},
 }
 }
 
@@ -213,12 +218,21 @@ func commandExplore(loc string) error{
 }
 
 func commandCatch(name string) error {
+		chance := rand.IntN(190)	
 	url := fmt.Sprintf("%s%s","https://pokeapi.co/api/v2/pokemon/", name)
 			if cachedData, ok := myCache.Get(url); ok{
 					var result Pokemon
 					if err := json.Unmarshal(cachedData, &result); err != nil{
 						return fmt.Errorf("error unmarshalling cached data: %v", err)
 					}
+											
+							fmt.Printf("Throwing a Pokeball at %s...\n", name)
+							if chance >= result.BaseExperience {
+									fmt.Printf("%s was caught!\n", name)
+									caughtPokemon[name] = result
+							}else{
+											fmt.Printf("%s escaped!\n", name)
+							}
 			}else{
 						resp, err := http.Get(url)
 						if err != nil {
@@ -231,7 +245,7 @@ func commandCatch(name string) error {
 						if err := json.Unmarshal(body, &result); err != nil {  // Parse []byte to the go struct pointer
 													fmt.Println("Can not unmarshal JSON")
 									}
-							chance := rand.IntN(190)	
+					
 							fmt.Printf("Throwing a Pokeball at %s...\n", name)
 							if chance >= result.BaseExperience {
 									fmt.Printf("%s was caught!\n", name)
@@ -239,7 +253,7 @@ func commandCatch(name string) error {
 							}else{
 											fmt.Printf("%s escaped!\n", name)
 							}
-									caughtPokemon[name] = result 
+							
 									myCache.Add(url, body)
 }
 	return nil
@@ -261,6 +275,22 @@ func commandInspect(name string) error {
         fmt.Println("you have not caught that pokemon")
     } 
     return nil
+}
+
+func commandPokedex(s string)error{
+	if s != "" {
+		fmt.Print("no args allowed for pokedex")
+	}
+	if len(caughtPokemon) > 0 {
+		      fmt.Println("Your Pokedex:")
+		for k := range caughtPokemon {
+			fmt.Printf(" - %v\n", k)
+		}
+	}else{
+		fmt.Println("pokedex is empty")
+	}
+
+	return nil
 }
 
 func main() {
